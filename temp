@@ -1,0 +1,44 @@
+#define ADC_VREF_mV    3300.0  // ESP32 reference voltage in millivolts
+#define ADC_RESOLUTION 4096.0  // ESP32 ADC resolution (12-bit)
+#define LM35_PIN       34      // LM35 connected to GPIO34 (ADC1)
+
+#include <DHT11.h>
+DHT11 dht11(2);  // DHT11 connected to GPIO2
+
+// Function to read LM35 temperature
+float readLM35Temperature() {
+  int adcVal = analogRead(LM35_PIN);
+  float milliVolt = adcVal * (ADC_VREF_mV / ADC_RESOLUTION);
+  float tempC = milliVolt / 10.0;  // Convert millivolt to temperature in °C
+  return tempC;
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Temperature Monitoring: LM35 and DHT11");
+}
+
+void loop() {
+  // Read LM35 temperature
+  float tempC_LM35 = readLM35Temperature();
+  Serial.print("LM35 Temperature: ");
+  Serial.print(tempC_LM35);
+  Serial.println(" °C");
+
+  // Read DHT11 temperature and humidity
+  int tempC_DHT = 0;
+  int humidity = 0;
+  int result = dht11.readTemperatureHumidity(tempC_DHT, humidity);
+
+  if (result == 0) {
+    Serial.print("DHT11 Temperature: ");
+    Serial.print(tempC_DHT);
+    Serial.print(" °C\tHumidity: ");
+    Serial.print(humidity);
+    Serial.println(" %");
+  } else {
+    Serial.println(DHT11::getErrorString(result));
+  }
+
+  delay(1000); // 1-second delay before next reading
+}
